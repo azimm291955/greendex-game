@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --indica: #9333ea;
+  --sativa: #eab308;
+  --hybrid: #22c55e;
+}
+
+html, body {
+  background-color: #0d1a0e;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  overflow: hidden;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #1a2e1a; }
+::-webkit-scrollbar-thumb { background: #2d4a2d; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #22c55e; }
+
+/* Card hit animation */
+@keyframes hitFlash {
+  0%, 100% { filter: brightness(1); }
+  30% { filter: brightness(2) saturate(0); }
+  60% { filter: brightness(0.6) hue-rotate(0deg); }
+}
+.animate-hit { animation: hitFlash 0.5s ease-in-out; }
+
+/* Glow for selectable cards */
+@keyframes selectGlow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 20px 6px rgba(34, 197, 94, 0.8); }
+}
+.card-selectable { animation: selectGlow 1.5s ease-in-out infinite; cursor: pointer; }
+
+/* HP bar transition */
+.hp-bar { transition: width 0.5s ease-in-out; }
+
+/* Smooth card hover */
+.card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
+.card-hover:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+
+/* Type badge colors */
+.type-indica { background: linear-gradient(135deg, #6b21a8, #9333ea); }
+.type-sativa { background: linear-gradient(135deg, #a16207, #eab308); }
+.type-hybrid { background: linear-gradient(135deg, #15803d, #22c55e); }
+
+/* Active zone glow */
+.active-zone { box-shadow: inset 0 0 20px rgba(34,197,94,0.15); }
+
+/* Player active zone — green tint */
+.player-active-zone { box-shadow: inset 0 0 24px rgba(34,197,94,0.2), 0 0 0 2px rgba(34,197,94,0.3); }
+
+/* Opponent active zone — red tint */
+.opponent-active-zone { box-shadow: inset 0 0 24px rgba(239,68,68,0.2), 0 0 0 2px rgba(239,68,68,0.3); }
