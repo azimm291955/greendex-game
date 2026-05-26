@@ -136,6 +136,8 @@ export default function GameBoard({ state, dispatch }) {
       case CARD_KIND.STRAIN:
         if (card.stage === 1) return player.bench.length < 3 || !player.active;
         if (card.stage === 2) {
+          // Rules: only one evolution per turn
+          if (player.hasEvolved) return false;
           // Can evolve active?
           if (canEvolve(player.active, player.hand)) {
             const evo = getEvolutionCard(player.active, player.hand);
