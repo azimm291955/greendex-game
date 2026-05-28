@@ -86,7 +86,7 @@ export function CardDetailModal({ card, onClose }) {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-black text-white">{card.name}</h2>
-            <p className="text-gray-400 text-sm">{card.subtitle}</p>
+            <p className="text-slate-300 text-sm">{card.subtitle}</p>
           </div>
           <span style={{ fontSize: '2.5rem' }}>{getTypeEmoji(card.type)}</span>
         </div>
@@ -102,7 +102,7 @@ export function CardDetailModal({ card, onClose }) {
             </span>
             <div className="flex-1">
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-gray-400">HP</span>
+                <span className="text-slate-300">HP</span>
                 <span className="font-bold" style={{ color: barColor }}>
                   {card.currentHp ?? card.hp} / {card.hp}
                 </span>
@@ -131,7 +131,7 @@ export function CardDetailModal({ card, onClose }) {
         {/* Attacks */}
         {card.attacks && card.attacks.length > 0 && (
           <div className="space-y-2">
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Attacks</p>
+            <p className="text-xs font-bold text-slate-300 uppercase tracking-wider">Attacks</p>
             {card.attacks.map((atk, i) => (
               <div
                 key={i}
@@ -145,7 +145,7 @@ export function CardDetailModal({ card, onClose }) {
                     <span className="text-orange-400 font-black">{atk.damage}</span>
                   </div>
                 </div>
-                <p className="text-gray-400 text-xs">{atk.description}</p>
+                <p className="text-slate-300 text-xs">{atk.description}</p>
                 {atk.effects && atk.effects.length > 0 && (
                   <div className="mt-1 flex flex-wrap gap-1">
                     {atk.effects.map(e => (
@@ -169,7 +169,7 @@ export function CardDetailModal({ card, onClose }) {
         {card.gear && (
           <div className="rounded-lg p-2 border border-yellow-800 bg-yellow-900/20">
             <p className="text-yellow-400 text-xs font-bold">🔧 Equipped: {card.gear.name}</p>
-            <p className="text-gray-400 text-xs">{card.gear.description}</p>
+            <p className="text-slate-300 text-xs">{card.gear.description}</p>
           </div>
         )}
 
@@ -229,7 +229,7 @@ export function AttackPanel({ card, energy, onAttack, onCancel }) {
                     <span className="text-red-400 text-xs">(recoil 10)</span>
                   )}
                 </div>
-                <p className="text-gray-400 text-xs leading-snug">{atk.description}</p>
+                <p className="text-slate-300 text-xs leading-snug">{atk.description}</p>
               </div>
               <div className="flex flex-col items-end gap-1 flex-shrink-0">
                 <span className="text-yellow-400 font-bold">{'⚡'.repeat(atk.energy)}</span>

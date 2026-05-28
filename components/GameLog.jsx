@@ -11,8 +11,8 @@ function logColor(msg) {
   if (msg.includes('Attack') || msg.includes('💥') || msg.includes('damage')) return '#fb923c';
   if (msg.includes('Shield') || msg.includes('🛡') || msg.includes('Resin')) return '#34d399';
   if (msg.includes('evolves') || msg.includes('⬆️')) return '#a78bfa';
-  if (msg.includes('turn begins') || msg.includes('─────')) return '#6b7280';
-  return '#d1d5db';
+  if (msg.includes('turn begins') || msg.includes('─────')) return '#94a3b8';
+  return '#e2e8f0';
 }
 
 export default function GameLog({ messages }) {
@@ -25,11 +25,11 @@ export default function GameLog({ messages }) {
   return (
     <div className="flex flex-col h-full bg-board-bg rounded-xl border border-board-border overflow-hidden">
       <div
-        className="px-3 py-2 flex items-center gap-2 border-b border-board-border"
-        style={{ background: '#1a2e1a' }}
+        className="px-3 py-2 flex items-center gap-2 border-b border-emerald-800"
+        style={{ background: 'linear-gradient(90deg,#16401f,#0a1c10)' }}
       >
         <span style={{ fontSize: '1rem' }}>📜</span>
-        <span className="text-green-400 font-bold text-sm tracking-wide">Battle Log</span>
+        <span className="text-emerald-300 font-bold text-sm tracking-wide">Battle Log</span>
       </div>
 
       <div className="flex-1 overflow-y-auto px-3 py-2 space-y-1 text-xs">
@@ -37,7 +37,7 @@ export default function GameLog({ messages }) {
           <div
             key={i}
             className="animate-slide-in leading-relaxed"
-            style={{ color: logColor(msg), opacity: i === 0 ? 1 : Math.max(0.35, 1 - i * 0.03) }}
+            style={{ color: logColor(msg), opacity: i === 0 ? 1 : Math.max(0.55, 1 - i * 0.025) }}
           >
             {msg}
           </div>

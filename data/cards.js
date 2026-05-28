@@ -530,10 +530,10 @@ export function hasTypeAdvantage(attackerType, defenderType) {
 
 export function getTypeColor(type) {
   switch (type) {
-    case TYPE.INDICA: return '#9333ea';
-    case TYPE.SATIVA: return '#eab308';
-    case TYPE.HYBRID: return '#22c55e';
-    default: return '#6b7280';
+    case TYPE.INDICA: return '#b66bff'; // brighter purple for contrast on dark board
+    case TYPE.SATIVA: return '#fbbf24'; // brighter amber
+    case TYPE.HYBRID: return '#4ade80'; // brighter green
+    default: return '#9ca3af';
   }
 }
 

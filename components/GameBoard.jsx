@@ -11,14 +11,14 @@ import { PHASE, TURN_PHASE, canEvolve, getEvolutionCard } from '../lib/gameEngin
 function KOTrack({ count, label }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-gray-400 text-xs">{label}</span>
+      <span className="text-slate-300 text-xs font-semibold">{label}</span>
       <div className="flex gap-1">
         {[0, 1, 2].map(i => (
           <div
             key={i}
             className="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all"
             style={{
-              borderColor: i < count ? '#ef4444' : '#374151',
+              borderColor: i < count ? '#ef4444' : '#5b6b5b',
               background: i < count ? '#ef444433' : 'transparent',
               boxShadow: i < count ? '0 0 8px #ef4444aa' : 'none',
             }}
@@ -34,16 +34,16 @@ function KOTrack({ count, label }) {
 function EnergyDisplay({ energy, maxEnergy, label }) {
   return (
     <div className="flex flex-col items-center gap-1">
-      <span className="text-gray-400 text-xs">{label}</span>
+      <span className="text-slate-300 text-xs font-semibold">{label}</span>
       <div className="flex gap-1">
         {Array(maxEnergy).fill(0).map((_, i) => (
           <div
             key={i}
             className="w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all"
             style={{
-              borderColor: i < energy ? '#eab308' : '#374151',
-              background: i < energy ? '#eab30833' : 'transparent',
-              boxShadow: i < energy ? '0 0 8px #eab308aa' : 'none',
+              borderColor: i < energy ? '#fbbf24' : '#5b6b5b',
+              background: i < energy ? '#fbbf2444' : 'transparent',
+              boxShadow: i < energy ? '0 0 10px #fbbf24cc' : 'none',
             }}
           >
             {i < energy && <span style={{ fontSize: '0.55rem' }}>⚡</span>}
@@ -58,13 +58,13 @@ function DeckPile({ count, label }) {
   return (
     <div className="flex flex-col items-center gap-1">
       <div
-        className="w-16 h-22 rounded-lg border-2 border-green-900 flex flex-col items-center justify-center"
-        style={{ background: 'linear-gradient(135deg,#1a2e1a,#0d1a0e)', minHeight: 88 }}
+        className="w-16 h-22 rounded-lg border-2 flex flex-col items-center justify-center"
+        style={{ background: 'linear-gradient(135deg,#1e3a23,#0a160d)', borderColor: '#4ade8077', minHeight: 88, boxShadow: '0 0 10px rgba(74,222,128,0.25)' }}
       >
         <span style={{ fontSize: '1.4rem' }}>🌿</span>
-        <span className="text-green-400 font-bold text-sm mt-1">{count}</span>
+        <span className="text-emerald-300 font-black text-sm mt-1">{count}</span>
       </div>
-      <span className="text-gray-500 text-xs">{label}</span>
+      <span className="text-slate-400 text-xs font-semibold">{label}</span>
     </div>
   );
 }
@@ -92,10 +92,10 @@ function BenchSlot({ card, isSelectable, isShaking, onClick, onInfoClick, size =
         </>
       ) : (
         <div
-          className="rounded-xl border-2 border-dashed border-green-900 flex items-center justify-center opacity-30"
-          style={{ width: size === 'sm' ? 96 : 128, height: size === 'sm' ? 128 : 176 }}
+          className="rounded-xl border-2 border-dashed flex items-center justify-center"
+          style={{ width: size === 'sm' ? 96 : 128, height: size === 'sm' ? 128 : 176, borderColor: '#3f6b3f', background: 'rgba(74,222,128,0.04)' }}
         >
-          <span className="text-green-700" style={{ fontSize: '1.4rem' }}>+</span>
+          <span className="text-emerald-600" style={{ fontSize: '1.4rem' }}>+</span>
         </div>
       )}
     </div>
@@ -109,6 +109,7 @@ export default function GameBoard({ state, dispatch }) {
   const [showAttackPanel, setShowAttackPanel] = useState(false);
 
   const { player, opponent, phase, turnPhase, shakingCard } = state;
+  const isSetup = phase === PHASE.SETUP;
   const isPlayerTurn = phase === PHASE.PLAYER_TURN || phase === PHASE.SELECT_BENCH;
   const isSelectBench = phase === PHASE.SELECT_BENCH;
 
@@ -122,6 +123,18 @@ export default function GameBoard({ state, dispatch }) {
 
   // ── Hand card click logic ──────────────────────────────────
   function handleHandClick(idx) {
+    // During setup, clicking a Stage-1 strain places it directly:
+    // first as Active, then onto the bench (up to 3).
+    if (isSetup) {
+      const card = player.hand[idx];
+      if (!isSetupCardPlayable(card)) return;
+      if (!player.active) {
+        dispatch({ type: 'SETUP_PLACE_ACTIVE', cardIdx: idx });
+      } else {
+        dispatch({ type: 'SETUP_PLACE_BENCH', cardIdx: idx });
+      }
+      return;
+    }
     if (!isPlayerTurn || isSelectBench) return;
     if (selectedHandIdx === idx) {
       setSelectedHandIdx(null);
@@ -130,7 +143,17 @@ export default function GameBoard({ state, dispatch }) {
     setSelectedHandIdx(idx);
   }
 
+  // Eligible during setup: Stage-1 strains, and only if there is room
+  // (no Active yet, or a free bench slot once Active is placed).
+  function isSetupCardPlayable(card) {
+    if (!isSetup || !card) return false;
+    if (card.kind !== CARD_KIND.STRAIN || card.stage !== 1) return false;
+    if (!player.active) return true;
+    return player.bench.length < 3;
+  }
+
   function isHandCardPlayable(card) {
+    if (isSetup) return isSetupCardPlayable(card);
     if (!isPlayerTurn || isSelectBench) return false;
     switch (card.kind) {
       case CARD_KIND.STRAIN:
@@ -225,6 +248,15 @@ export default function GameBoard({ state, dispatch }) {
     dispatch({ type: 'PROMOTE_BENCH', benchIdx });
   }
 
+  function handleSetupReturn(from) {
+    dispatch({ type: 'SETUP_RETURN_TO_HAND', from });
+  }
+
+  function handleStartBattle() {
+    dispatch({ type: 'START_BATTLE' });
+    setSelectedHandIdx(null);
+  }
+
   // ── Render ─────────────────────────────────────────────────
   return (
     <div className="flex h-full gap-3 p-3 overflow-hidden">
@@ -257,7 +289,7 @@ export default function GameBoard({ state, dispatch }) {
           {/* Opponent energy */}
           <div className="flex flex-col gap-2 items-center">
             <EnergyDisplay energy={opponent.energy} maxEnergy={opponent.maxEnergy} label="⚡ OPP" />
-            <span className="text-gray-600 text-xs">{opponent.hand.length} cards</span>
+            <span className="text-slate-400 text-xs font-medium">{opponent.hand.length} cards</span>
           </div>
         </div>
 
@@ -272,7 +304,7 @@ export default function GameBoard({ state, dispatch }) {
 
           {/* Opponent Active */}
           <div className="flex flex-col items-center gap-2">
-            <span className="text-gray-500 text-xs font-semibold tracking-widest uppercase">Opponent</span>
+            <span className="text-slate-300 text-xs font-bold tracking-widest uppercase">Opponent</span>
             <div className="relative opponent-active-zone rounded-xl p-1">
               {opponent.active ? (
                 <>
@@ -313,18 +345,21 @@ export default function GameBoard({ state, dispatch }) {
             <div
               className="px-3 py-1 rounded-full text-xs font-bold text-white"
               style={{
-                background: isPlayerTurn ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
-                border: `1px solid ${isPlayerTurn ? '#22c55e44' : '#ef444444'}`,
+                background: (isPlayerTurn || isSetup) ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)',
+                border: `1px solid ${(isPlayerTurn || isSetup) ? '#22c55e44' : '#ef444444'}`,
               }}
             >
-              {isSelectBench ? '⟳ Choose Bench' : isPlayerTurn ? '▶ YOUR TURN' : '⏳ AI Thinking...'}
+              {isSetup ? '🌱 Choose Your Strains'
+                : isSelectBench ? '⟳ Choose Bench'
+                : isPlayerTurn ? '▶ YOUR TURN'
+                : '⏳ AI Thinking...'}
             </div>
-            <div className="text-gray-600 text-xs">Turn {state.turnNumber}</div>
+            <div className="text-slate-400 text-xs font-semibold">Turn {state.turnNumber}</div>
           </div>
 
           {/* Player Active */}
           <div className="flex flex-col items-center gap-2">
-            <div className="relative player-active-zone rounded-xl p-1">
+            <div className={`relative player-active-zone rounded-xl p-1 ${isSetup && !player.active ? 'setup-target' : ''}`}>
               {player.active ? (
                 <>
                   <StrainCard
@@ -332,24 +367,31 @@ export default function GameBoard({ state, dispatch }) {
                     isActive
                     isShaking={shakingCard === player.active.instanceId}
                     size="lg"
-                    onClick={() => setDetailCard(player.active)}
+                    onClick={() => isSetup ? handleSetupReturn('active') : setDetailCard(player.active)}
                     isSelectable
                   />
                   <button
                     onClick={() => setDetailCard(player.active)}
                     className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-500 transition-colors z-10 text-xs"
                   >ℹ</button>
+                  {isSetup && (
+                    <span className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap text-[10px] font-bold text-emerald-300 bg-black/70 px-2 py-0.5 rounded-full">
+                      click to undo
+                    </span>
+                  )}
                 </>
               ) : (
                 <div
-                  className="rounded-xl border-2 border-dashed border-green-900/40 flex items-center justify-center opacity-40"
+                  className={`rounded-xl border-2 border-dashed flex items-center justify-center ${isSetup ? 'border-emerald-400 opacity-90 animate-pulse' : 'border-green-900/40 opacity-40'}`}
                   style={{ width: 160, height: 224 }}
                 >
-                  <span className="text-green-700 text-2xl">+</span>
+                  {isSetup
+                    ? <span className="text-emerald-300 text-xs font-bold text-center px-2">Pick a flower<br/>from your hand</span>
+                    : <span className="text-green-700 text-2xl">+</span>}
                 </div>
               )}
             </div>
-            <span className="text-gray-500 text-xs font-semibold tracking-widest uppercase">You</span>
+            <span className="text-slate-300 text-xs font-bold tracking-widest uppercase">You</span>
           </div>
         </div>
 
@@ -369,8 +411,11 @@ export default function GameBoard({ state, dispatch }) {
                 key={i}
                 card={player.bench[i] || null}
                 isShaking={shakingCard && player.bench[i]?.instanceId === shakingCard}
-                isSelectable={isSelectBench && !!player.bench[i]}
-                onClick={() => isSelectBench && handlePromoteBench(i)}
+                isSelectable={(isSelectBench || isSetup) && !!player.bench[i]}
+                onClick={() => {
+                  if (isSelectBench) handlePromoteBench(i);
+                  else if (isSetup) handleSetupReturn(i);
+                }}
                 onInfoClick={() => setDetailCard(player.bench[i])}
                 size="md"
               />
@@ -420,6 +465,26 @@ export default function GameBoard({ state, dispatch }) {
                 Select bench<br/>card to promote
               </div>
             )}
+            {isSetup && (
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={handleStartBattle}
+                  disabled={!player.active}
+                  className={[
+                    'px-3 py-2 rounded-xl text-xs font-bold text-white transition-all',
+                    player.active ? 'hover:scale-105 cursor-pointer' : 'opacity-40 cursor-not-allowed',
+                  ].join(' ')}
+                  style={{ background: 'linear-gradient(90deg,#16a34a,#22c55e)' }}
+                >
+                  ⚔️ Start Battle
+                </button>
+                <span className="text-emerald-300/80 text-[10px] text-center leading-tight">
+                  {player.active
+                    ? `Bench: ${player.bench.length}/3 (optional)`
+                    : 'Choose an Active first'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -438,10 +503,10 @@ export default function GameBoard({ state, dispatch }) {
         {/* ── PLAYER HAND ───────────────────────────────────── */}
         <div
           className="flex gap-2 px-3 py-2 overflow-x-auto"
-          style={{ minHeight: 160, background: '#0d1a0ebb', borderTop: '1px solid #2d4a2d' }}
+          style={{ minHeight: 160, background: 'linear-gradient(180deg,#0a160d,#04100a)', borderTop: '2px solid #3f6b3f' }}
         >
-          <div className="flex items-center gap-1 pr-2 border-r border-green-900 flex-shrink-0">
-            <span className="text-gray-500 text-xs writing-mode-vertical transform -rotate-90 whitespace-nowrap">
+          <div className="flex items-center gap-1 pr-2 border-r border-emerald-800 flex-shrink-0">
+            <span className="text-emerald-300 text-xs font-bold writing-mode-vertical transform -rotate-90 whitespace-nowrap">
               HAND ({player.hand.length})
             </span>
           </div>

@@ -36,17 +36,19 @@ export default function StrainCard({
         isActive ? 'ring-2 ring-offset-1 ring-offset-transparent' : 'opacity-90',
       ].join(' ')}
       style={{
-        background: `linear-gradient(160deg, #1a2e1a 0%, ${typeColor}22 100%)`,
+        background: `linear-gradient(160deg, ${typeColor}38 0%, #0a1810 68%)`,
         borderColor: typeColor,
-        boxShadow: isActive ? `0 0 16px ${typeColor}66` : undefined,
+        boxShadow: isActive
+          ? `0 0 22px ${typeColor}99, inset 0 0 12px ${typeColor}22`
+          : `0 2px 10px rgba(0,0,0,0.55)`,
       }}
     >
       {/* Header: name + type */}
       <div
         className="flex items-center justify-between px-2 py-1"
-        style={{ background: `${typeColor}33` }}
+        style={{ background: `${typeColor}55`, borderBottom: `1px solid ${typeColor}` }}
       >
-        <span className="font-bold text-white truncate" style={{ fontSize: '0.6rem' }}>
+        <span className="font-bold text-white truncate" style={{ fontSize: '0.62rem', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
           {card.name}
         </span>
         <span style={{ fontSize: '0.65rem' }}>{getTypeEmoji(card.type)}</span>
@@ -64,8 +66,8 @@ export default function StrainCard({
 
         {/* Stage badge */}
         <span
-          className="absolute top-1 left-1 text-white rounded px-1"
-          style={{ fontSize: '0.5rem', background: `${typeColor}aa` }}
+          className="absolute top-1 left-1 rounded px-1 font-black"
+          style={{ fontSize: '0.5rem', background: typeColor, color: '#07120a' }}
         >
           S{card.stage}
         </span>
@@ -96,15 +98,15 @@ export default function StrainCard({
       {/* HP Bar */}
       <div className="px-2 pb-1 pt-0.5">
         <div className="flex justify-between items-center mb-0.5">
-          <span className="text-gray-400" style={{ fontSize: '0.5rem' }}>HP</span>
-          <span className="font-bold" style={{ fontSize: '0.55rem', color: barColor }}>
+          <span className="text-slate-300" style={{ fontSize: '0.5rem' }}>HP</span>
+          <span className="font-bold" style={{ fontSize: '0.55rem', color: barColor, textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>
             {card.currentHp}/{card.hp}
           </span>
         </div>
-        <div className="w-full rounded-full overflow-hidden" style={{ height: 4, background: '#1a2e1a' }}>
+        <div className="w-full rounded-full overflow-hidden" style={{ height: 5, background: '#04100a', border: '1px solid rgba(255,255,255,0.12)' }}>
           <div
             className="hp-bar rounded-full"
-            style={{ width: `${pct}%`, height: '100%', background: barColor }}
+            style={{ width: `${pct}%`, height: '100%', background: barColor, boxShadow: `0 0 6px ${barColor}` }}
           />
         </div>
       </div>
@@ -114,10 +116,10 @@ export default function StrainCard({
         <div className="px-2 pb-1 space-y-0.5">
           {(card.attacks || []).map((atk, i) => (
             <div key={i} className="flex justify-between items-center">
-              <span className="text-gray-300 truncate" style={{ fontSize: '0.5rem' }}>
+              <span className="text-slate-200 truncate" style={{ fontSize: '0.5rem' }}>
                 {'⚡'.repeat(atk.energy)} {atk.name}
               </span>
-              <span className="text-yellow-300 font-bold" style={{ fontSize: '0.5rem' }}>
+              <span className="text-amber-300 font-black" style={{ fontSize: '0.52rem' }}>
                 {atk.damage}
               </span>
             </div>

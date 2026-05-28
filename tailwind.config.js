@@ -10,7 +10,7 @@ module.exports = {
         indica: { light: '#c084fc', DEFAULT: '#9333ea', dark: '#6b21a8' },
         sativa: { light: '#fde047', DEFAULT: '#eab308', dark: '#a16207' },
         hybrid: { light: '#4ade80', DEFAULT: '#22c55e', dark: '#15803d' },
-        board: { bg: '#0d1a0e', card: '#1a2e1a', border: '#2d4a2d' },
+        board: { bg: '#05100a', card: '#10241a', border: '#3f6b3f' },
       },
       animation: {
         shake: 'shake 0.4s ease-in-out',
