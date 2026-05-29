@@ -1,9 +1,107 @@
 // ============================================================
-//  Modals — Victory/Defeat screen + Card Detail + Attack Panel
+//  Modals — Coin Flip + Victory/Defeat screen + Card Detail + Attack Panel
 //  All imports MUST be at the top of the file in ES modules
 // ============================================================
+import { useEffect, useRef, useState } from 'react';
 import { getTypeColor, getTypeEmoji, getTypeLabel } from '../data/cards';
 import { hpPercent, hpColor } from '../lib/gameEngine';
+
+// ── Opening Coin Flip Modal ──────────────────────────────────
+// Spins for ~1.5s, reveals who goes first, then hands the result back
+// to the game via onComplete('player' | 'opponent').
+const COIN_SPIN_MS = 1500;
+const COIN_REVEAL_MS = 1300;
+
+export function CoinFlipModal({ onComplete }) {
+  const [isFlipping, setIsFlipping] = useState(true);
+  const [result, setResult] = useState(null); // 'player' | 'opponent'
+  const resolvedRef = useRef(false);           // guard against double-invocation
+  const revealRef = useRef(null);
+
+  useEffect(() => {
+    if (resolvedRef.current) return;
+    resolvedRef.current = true;
+
+    // Spin, then determine the outcome.
+    const spinTimer = setTimeout(() => {
+      const outcome = Math.random() < 0.5 ? 'player' : 'opponent';
+      setResult(outcome);
+      setIsFlipping(false);
+      // Show the result for a moment, then hand control back to the game.
+      revealRef.current = setTimeout(() => onComplete(outcome), COIN_REVEAL_MS);
+    }, COIN_SPIN_MS);
+
+    return () => {
+      clearTimeout(spinTimer);
+      if (revealRef.current) clearTimeout(revealRef.current);
+    };
+    // Run once on mount; onComplete is captured at mount and only fired once.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const playerWon = result === 'player';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm">
+      <div className="flex flex-col items-center gap-8 text-center px-6">
+        <h2
+          className="text-2xl font-black tracking-widest uppercase"
+          style={{
+            background: 'linear-gradient(90deg,#4ade80,#22c55e,#86efac)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+          }}
+        >
+          {isFlipping ? 'Flipping the Coin…' : 'Coin Flip'}
+        </h2>
+
+        {/* Coin */}
+        <div style={{ perspective: 800 }}>
+          <div
+            className={isFlipping ? 'coin-spinning' : ''}
+            style={{
+              width: 120,
+              height: 120,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '3.5rem',
+              fontWeight: 900,
+              color: '#0c2114',
+              background: 'radial-gradient(circle at 35% 30%, #fde68a, #f59e0b 60%, #b45309)',
+              boxShadow: '0 0 40px rgba(245,158,11,0.6), inset 0 0 18px rgba(180,83,9,0.5)',
+              border: '4px solid #fbbf24',
+            }}
+          >
+            {isFlipping ? '🌿' : playerWon ? '🌿' : '🔥'}
+          </div>
+        </div>
+
+        {/* Result text */}
+        {!isFlipping && result && (
+          <div className="animate-slide-in">
+            <p
+              className="text-3xl font-black tracking-wide"
+              style={{ color: playerWon ? '#4ade80' : '#f87171' }}
+            >
+              {playerWon ? 'You Go First!' : 'Opponent Goes First!'}
+            </p>
+            <p className="text-slate-300 text-sm mt-2">
+              {playerWon
+                ? 'Choose your Active strain to begin.'
+                : 'The opponent takes the opening turn…'}
+            </p>
+          </div>
+        )}
+
+        {isFlipping && (
+          <p className="text-slate-400 text-sm tracking-wide">Heads you lead, tails they do…</p>
+        )}
+      </div>
+    </div>
+  );
+}
 
 // ── Victory / Defeat Modal ───────────────────────────────────
 export function GameOverModal({ winner, onRestart }) {

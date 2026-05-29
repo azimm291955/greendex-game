@@ -7,10 +7,13 @@ import { gameReducer, buildInitialState, PHASE, TURN_PHASE } from '../lib/gameEn
 import { buildAIActions } from '../lib/aiEngine';
 import GameBoard from '../components/GameBoard';
 import GameLog from '../components/GameLog';
-import { GameOverModal } from '../components/Modals';
+import { GameOverModal, CoinFlipModal } from '../components/Modals';
 
 // ── AI timing ─────────────────────────────────────────────
 const AI_ACTION_DELAY_MS = 700;
+// Delay before auto-ending the player's turn after an attack, so the
+// hit/shake animation has time to play.
+const AUTO_END_TURN_DELAY_MS = 850;
 
 export default function GreendexGame() {
   const [state, dispatch] = useReducer(gameReducer, null, buildInitialState);
@@ -54,6 +57,22 @@ export default function GreendexGame() {
     return () => clearTimeout(t);
   }, [state.shakingCard]);
 
+  // ── Auto-end the player's turn after attacking ───────────
+  // The reducer flags pendingAutoEndTurn when the player attacks. We wait a
+  // beat so the hit animation can play, then switch to the opponent. If the
+  // attack instead sent us to SELECT_BENCH (e.g. recoil self-KO), this waits
+  // until the player has promoted and we're back on PLAYER_TURN.
+  useEffect(() => {
+    if (!state.pendingAutoEndTurn || state.phase !== PHASE.PLAYER_TURN) return;
+    const t = setTimeout(() => dispatch({ type: 'END_TURN' }), AUTO_END_TURN_DELAY_MS);
+    return () => clearTimeout(t);
+  }, [state.pendingAutoEndTurn, state.phase]);
+
+  // ── Resolve the opening coin flip ────────────────────────
+  function handleCoinFlipComplete(result) {
+    dispatch({ type: 'RESOLVE_COIN_FLIP', result });
+  }
+
   // ── Restart ─────────────────────────────────────────────
   function handleRestart() {
     clearTimeout(aiTimerRef.current);
@@ -65,6 +84,7 @@ export default function GreendexGame() {
   }
 
   const isGameOver = state.phase === PHASE.GAME_OVER;
+  const isCoinFlip = state.phase === PHASE.COIN_FLIP;
 
   return (
     <>
@@ -114,7 +134,9 @@ export default function GreendexGame() {
                 border: `1px solid ${(state.phase === PHASE.PLAYER_TURN || state.phase === PHASE.SETUP) ? '#22c55e33' : '#ef444433'}`,
               }}
             >
-              {state.phase === PHASE.SETUP
+              {state.phase === PHASE.COIN_FLIP
+                ? '🪙 Coin Flip'
+                : state.phase === PHASE.SETUP
                 ? '🌱 Setup'
                 : state.phase === PHASE.PLAYER_TURN
                 ? '▶ Your Turn'
@@ -152,6 +174,11 @@ export default function GreendexGame() {
             </div>
           </div>
         </div>
+
+        {/* ── COIN FLIP MODAL ─────────────────────────────── */}
+        {isCoinFlip && (
+          <CoinFlipModal onComplete={handleCoinFlipComplete} />
+        )}
 
         {/* ── GAME OVER MODAL ─────────────────────────────── */}
         {isGameOver && (
